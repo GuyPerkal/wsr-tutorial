@@ -51,6 +51,7 @@
     "jest-yoshi-preset": "^4.1.0",
     "lint-staged": "^10.0.7",
     "puppeteer": "^1.1.0",
+    "wix-style-react": "^8.39.0",
     "yoshi": "^4.1.0",
     "yoshi-style-dependencies": "^4.1.0"
   },

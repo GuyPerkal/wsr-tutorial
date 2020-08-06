@@ -1,21 +1,43 @@
-import React, { Suspense } from 'react';
-import { render, waitForElement } from '@testing-library/react';
-import { I18nextProvider } from 'react-i18next';
+import React from 'react';
+import { render } from '@testing-library/react';
+import AppDriver from './App.driver';
 import App from './App';
-import i18n from '../__mocks__/i18n';
 
 describe('App', () => {
-  it('renders a title correctly', async () => {
-    const { getByTestId } = render(
-      <Suspense fallback={'...loading'}>
-        <I18nextProvider i18n={i18n}>
-          <App />
-        </I18nextProvider>
-      </Suspense>,
-    );
+  it('should  keep submit button disabled until all required fields are entered', async () => {
+    const { baseElement } = render(<App />);
+    const appDriver = new AppDriver(baseElement);
 
-    await waitForElement(() => getByTestId('app-title'));
+    expect(await appDriver.submitButtonDriver.isButtonDisabled()).toBe(true);
 
-    expect(getByTestId('app-title').textContent).toBe('app.title');
+    await appDriver.enterRequiredFields();
+
+    expect(await appDriver.submitButtonDriver.isButtonDisabled()).toBe(false);
+  });
+
+  it('should show the submitted info section on submit', async () => {
+    const { baseElement, queryByText } = render(<App />);
+    expect(queryByText('Submitted info')).toBeFalsy();
+
+    const appDriver = new AppDriver(baseElement);
+    await appDriver.enterRequiredFields();
+    await appDriver.submitButtonDriver.click();
+
+    expect(queryByText('Submitted info')).toBeTruthy();
+  });
+
+  it('should clear the form on clear click', async () => {
+    const { baseElement } = render(<App />);
+    const appDriver = new AppDriver(baseElement);
+    await appDriver.enterRequiredFields();
+    await appDriver.enterFunFact();
+    await appDriver.submit();
+    await appDriver.clear();
+
+    expect(await appDriver.nameInputDriver.getText()).toBe('');
+    expect(await appDriver.colorDropdownDriver.inputDriver.getText()).toBe('');
+    expect(await appDriver.termsCheckboxDriver.isChecked()).toBe(false);
+    expect(await appDriver.funFactInputAreaDriver.getValue()).toBe('');
+    expect(await appDriver.submitButtonDriver.isButtonDisabled()).toBe(true);
   });
 });
